@@ -1,0 +1,205 @@
+// Tarea1: CRUD  metodologia
+
+const readline = require("readline");
+
+const alumnos = [
+  { id: 1, nombre: "Martina Concha", email: "Martina.Concha2301@alumnos.ubiobio.cl", seccion: "2" },
+  { id: 2, nombre: "Jose Carrillo", email: "Jose.carrillo2401@alumnos.ubiobio.cl", seccion: "1" },
+  { id: 3, nombre: "Renato Quezada", email: "Renato.quezada2401@alumnos.ubiobio.cl", seccion: "1" },
+];
+
+let sig_Id = 4;
+
+
+
+// funcion para Listar alumnos
+function listar_alumnos() {
+  return alumnos;
+}
+
+
+// funcion para actualizar alumno por id
+function actualizar_el_alumno(id, datos_actualizados) {
+
+  const alumno = alumnos.find((a) => a.id === id);
+
+  if(!alumno){
+    return null;
+  }
+
+  if(datos_actualizados.nombre !== undefined){
+    alumno.nombre = datos_actualizados.nombre;
+  }
+
+  if(datos_actualizados.email !== undefined){
+    alumno.email = datos_actualizados.email;
+  }
+
+  if(datos_actualizados.seccion !== undefined){
+    alumno.seccion = datos_actualizados.seccion;
+  }
+
+  return alumno;
+}
+// funcion para crear alumno 
+function crear_alumno(nombre, email, seccion) {
+  const Alumnonuevo = {
+    id: sig_Id,
+    nombre,
+    email,
+    seccion,
+  };
+
+  alumnos.push(Alumnonuevo);
+  sig_Id++;
+
+  return Alumnonuevo;
+}
+// funcion para eliminar alumno por id
+function eliminar_los_Alumno(id){
+  const indice = alumnos.findIndex((a) => a.id === id);
+
+  if(indice === -1){
+    return false;
+  }
+
+
+  alumnos.splice(indice, 1);
+  return true;
+}
+// funcion para poder obtener alumno por id
+function obtener_alumno_por_Id(id) {
+
+  return alumnos.find((alumno) => alumno.id === id);
+}
+
+// parte extra
+function buscar_el_alumnos_seccion(seccion) {
+  return alumnos.filter((a) => a.seccion === seccion);
+}
+
+// -******************-
+// MENU
+// -*****************_
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+function preguntar(texto) {
+  return new Promise((resolve) => {
+    rl.question(texto, (respuesta) => {
+      resolve(respuesta.trim());
+    });
+  });
+}
+
+function toNumber(valor) {
+  const numero = Number(valor);
+  return Number.isNaN(numero) ? null : numero;
+}
+
+function mostrarmenu() {
+  console.log("\n----- MENU ------");
+  console.log("1) Listar alumnos");
+  console.log("2) Crear alumno nuevo");
+  console.log("3) Buscar alumno por id");
+  console.log("4) Editar alumno");
+  console.log("5) Eliminar alumno");
+  console.log("0) Salir");
+}
+
+async function ejecutarmenu() {
+  let continuar = true;
+
+  while (continuar) {
+    mostrarmenu();
+    const opcion = await preguntar("Selecciona una opcion: ");
+
+    switch (opcion) {
+      case "1": {
+        const lista = listar_alumnos();
+        console.log("\n---LISTADO ---");
+        console.table(lista);
+        break;
+      }
+
+      case "2": {
+        const nombre = await preguntar("Nombre: ");
+        const email = await preguntar("Email: ");
+        const seccion = await preguntar("Seccion: ");
+
+        const Alumnonuevo= crear_alumno(nombre, email, seccion);
+        console.log("Alumno creado:", Alumnonuevo);
+        break;
+      }
+
+      case "3": {
+        const id = toNumber(await preguntar("ID a buscar: "));
+        if (id === null) {
+          console.log("ID invalido.");
+          break;
+        }
+
+        const alumno = obtener_alumno_por_Id(id);
+        console.log(
+          alumno ? "Se entro al alumno:" : "No existe ese alumno:",
+          alumno
+        );
+        break;
+      }
+
+      case "4": {
+        const id = toNumber(await preguntar("ID a editar: "));
+        if (id === null) {
+          console.log("ID invalido.");
+          break;
+        }
+
+        const nombre = await preguntar("Nuevo nombre: ");
+        const email = await preguntar("Nuevo email: ");
+        const seccion = await preguntar("Nueva seccion: ");
+
+        const datos_actualizados = {};
+        if (nombre) datos_actualizados.nombre = nombre;
+        if (email) datos_actualizados.email = email;
+        if (seccion) datos_actualizados.seccion = seccion;
+
+        const actualizado = actualizar_alumno(id, datos_actualizados);
+
+        console.log(
+          actualizado ? "Alumno actualizado:" : "No existe ese alumno:",
+          actualizado
+        );
+        break;
+      }
+
+      case "5": {
+        const id = toNumber(await preguntar("ID a eliminar: "));
+        if (id === null) {
+          console.log("ID invalido.");
+          break;
+        }
+
+        const eliminado = eliminar_alumno(id);
+        console.log(eliminado ? "Alumno eliminado." : "No existe ese id.");
+        break;
+      }
+
+      case "0": {
+        continuar = false;
+        console.log("ya salio del programa");
+        break;
+      }
+
+      default: {
+        console.log("Opcion no valida.");
+      }
+    }
+  }
+
+  rl.close();
+}
+
+ejecutarmenu();
